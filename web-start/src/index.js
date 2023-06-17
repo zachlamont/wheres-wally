@@ -35,6 +35,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  getDocs,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -442,7 +443,111 @@ mediaCaptureElement.addEventListener("change", onMediaFileSelected);
 const firebaseAppConfig = getFirebaseConfig();
 // TODO 0: Initialize Firebase
 
+//-----------------------------------------------------------------
+
+// Save the points of interest in Firestore
+async function savePointsOfInterest(pointsOfInterest) {
+  try {
+    const collectionRef = collection(getFirestore(), "pointsOfInterest");
+    await Promise.all(
+      pointsOfInterest.map(async (point) => {
+        await addDoc(collectionRef, point);
+      })
+    );
+    console.log("Points of interest saved successfully");
+  } catch (error) {
+    console.error("Error saving points of interest to Firestore", error);
+  }
+}
+
+// Define the displayImage function
+function displayImage(imageUrl) {
+  const imageElement = document.getElementById("waldo-image");
+  imageElement.style.backgroundImage = `url(${imageUrl})`;
+  imageElement.style.backgroundSize = "cover";
+  imageElement.style.backgroundPosition = "center";
+  imageElement.style.width = "100%";
+  imageElement.style.height = "100%";
+}
+
+// Initialize the game
+async function initializeGame() {
+  // Display the image
+  const imageUrl = "https://images4.alphacoders.com/645/thumb-1920-64574.jpg";
+  displayImage(imageUrl);
+
+  // Set up event listener for click on the image
+  const imageElement = document.getElementById("waldo-image");
+  imageElement.addEventListener("click", handleImageClick);
+  imageElement.style.cursor = "crosshair";
+
+  // Retrieve points of interest from Firestore
+  try {
+    const collectionRef = collection(getFirestore(), "pointsOfInterest");
+    const pointsOfInterestSnapshot = await getDocs(collectionRef);
+    const pointsOfInterest = pointsOfInterestSnapshot.docs.map((doc) =>
+      doc.data()
+    );
+
+    // Save the retrieved points of interest in a global variable
+    window.pointsOfInterest = pointsOfInterest;
+  } catch (error) {
+    console.error("Error retrieving points of interest from Firestore", error);
+  }
+}
+
+// Event handler for click on the image
+function handleImageClick(event) {
+  const { offsetX, offsetY } = event;
+  const toolboxSize = 100; // Size of the toolbox (100px x 100px)
+
+  // Check if the click is near any point of interest
+  const selectedPoint = checkPointOfInterest(offsetX, offsetY, toolboxSize);
+  if (selectedPoint) {
+    const message = `You found ${selectedPoint.character}`;
+    showRewardMessage(message);
+    drawCircle(selectedPoint.x, selectedPoint.y);
+  }
+}
+
+// Check if the click is near any point of interest
+function checkPointOfInterest(x, y, distanceThreshold) {
+  const pointsOfInterest = window.pointsOfInterest || [];
+
+  for (const point of pointsOfInterest) {
+    const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+    if (distance <= distanceThreshold) {
+      return point;
+    }
+  }
+
+  return null;
+}
+
+// Show the reward message
+function showRewardMessage(message) {
+  // Display the message to the user
+  console.log(message);
+}
+
+// Draw a circle on the image at the given coordinates
+function drawCircle(x, y) {
+  // Draw a circle on the image at (x, y) using a canvas or other method
+  // Add your implementation here
+}
+
 initializeApp(firebaseAppConfig);
+
+const pointsOfInterest = [
+  { x: 100, y: 200, character: "Waldo" },
+  { x: 300, y: 400, character: "Wilma" },
+  { x: 500, y: 600, character: "Wizard" },
+];
+
+savePointsOfInterest(pointsOfInterest);
+
+// Call the initializeGame function
+initializeGame();
 
 // TODO: Enable Firebase Performance Monitoring.
 getPerformance();
