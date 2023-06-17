@@ -126,10 +126,8 @@
       })(addEventListener, removeEventListener);
     </script>
   </head>
+
   <body>
-    
-
-
     <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
       <!-- Header section containing logo -->
       <header
@@ -140,7 +138,7 @@
             class="mdl-layout__header-row mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop"
           >
             <h3>
-              <i class="material-icons">chat_bubble_outline</i> Friendly Chat
+              <i class="material-icons">chat_bubble_outline</i> Where's Wally?
             </h3>
           </div>
           <div id="user-container">
@@ -164,6 +162,7 @@
       </header>
 
       <main class="mdl-layout__content mdl-color--grey-100">
+        <div id="waldo-image"></div>
         <div
           id="messages-card-container"
           class="mdl-cell mdl-cell--12-col mdl-grid"
@@ -221,11 +220,8 @@
             <button class="mdl-snackbar__action" type="button"></button>
           </div>
         </div>
-        <div id="waldo-image">hello</div>
       </main>
     </div>
-
-   
 
     <!-- This script is created by webpack -->
     <script src="scripts/main.js"></script>

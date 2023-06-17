@@ -397,7 +397,7 @@ function displayMessage(id, timestamp, name, text, picUrl, imageUrl) {
     div.classList.add("visible");
   }, 1);
   messageListElement.scrollTop = messageListElement.scrollHeight;
-  messageInputElement.focus();
+  //messageInputElement.focus();
 }
 
 // Enables or disables the submit button depending on the values of the input
@@ -443,7 +443,7 @@ mediaCaptureElement.addEventListener("change", onMediaFileSelected);
 const firebaseAppConfig = getFirebaseConfig();
 // TODO 0: Initialize Firebase
 
-//-----------------------------------------------------------------
+//--------WHERE'S WALLY?---------------------------------------------------------
 
 // Save the points of interest in Firestore
 async function savePointsOfInterest(pointsOfInterest) {
@@ -495,29 +495,114 @@ async function initializeGame() {
     console.error("Error retrieving points of interest from Firestore", error);
   }
 }
-
 // Event handler for click on the image
 function handleImageClick(event) {
-  const { offsetX, offsetY } = event;
+  const { pageX, pageY } = event;
   const toolboxSize = 100; // Size of the toolbox (100px x 100px)
 
-  // Check if the click is near any point of interest
-  const selectedPoint = checkPointOfInterest(offsetX, offsetY, toolboxSize);
+  // Check if there is an existing modal
+  const existingModal = document.querySelector(".modal");
+  if (existingModal) {
+    existingModal.parentNode.removeChild(existingModal);
+  }
+
+  // Create and display the modal at the cursor location
+  const modal = createModal(pageX, pageY);
+  const imageElement = document.getElementById("waldo-image"); // or document.querySelector("main")
+  imageElement.appendChild(modal);
+
+  // Add event listener to handle option selection
+  modal.addEventListener("click", (event) =>
+    handleOptionSelection(event, toolboxSize, pageX, pageY)
+  );
+
+  console.log(pageX);
+  console.log(pageY);
+}
+
+// Create and display the modal at the specified location
+function createModal(x, y) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.style.position = "fixed";
+  modal.style.left = x + "px";
+  modal.style.top = y + "px";
+
+  // Create and append the list of options
+  const options = ["Wally", "Wilma", "Wizard"];
+  const list = document.createElement("ul");
+  list.style.listStyle = "none";
+  list.style.padding = "0";
+  list.style.backgroundColor = "blue";
+  list.style.color = "blue";
+
+  options.forEach((option) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = option;
+    listItem.style.backgroundColor = "blue";
+    listItem.style.color = "white";
+    listItem.style.padding = "10px";
+    listItem.style.cursor = "pointer";
+
+    // Add hover styles
+    listItem.addEventListener("mouseover", () => {
+      listItem.style.backgroundColor = "white";
+      listItem.style.color = "red";
+    });
+
+    listItem.addEventListener("mouseout", () => {
+      listItem.style.backgroundColor = "blue";
+      listItem.style.color = "white";
+    });
+
+    list.appendChild(listItem);
+  });
+
+  modal.appendChild(list);
+
+  console.log("modal displayed :)");
+  return modal;
+}
+
+// Handle option selection
+function handleOptionSelection(event, distanceThreshold, clickX, clickY) {
+  const selectedOption = event.target.textContent;
+
+  // Check if the selected option is near any point of interest
+  const selectedPoint = checkPointOfInterest(
+    clickX,
+    clickY,
+    distanceThreshold,
+    selectedOption
+  );
   if (selectedPoint) {
-    const message = `You found ${selectedPoint.character}`;
+    const message = `You found ${selectedPoint.character}!`;
     showRewardMessage(message);
     drawCircle(selectedPoint.x, selectedPoint.y);
   }
+
+  // Remove the modal from the DOM
+  const modal = event.target.closest(".modal");
+  modal.parentNode.removeChild(modal);
 }
 
-// Check if the click is near any point of interest
-function checkPointOfInterest(x, y, distanceThreshold) {
+// Check if the selected option is near any point of interest
+function checkPointOfInterest(
+  clickX,
+  clickY,
+  distanceThreshold,
+  selectedOption
+) {
   const pointsOfInterest = window.pointsOfInterest || [];
 
   for (const point of pointsOfInterest) {
-    const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
-    if (distance <= distanceThreshold) {
-      return point;
+    if (point.character === selectedOption) {
+      const distance = Math.sqrt(
+        (point.x - clickX) ** 2 + (point.y - clickY) ** 2
+      );
+      if (distance <= distanceThreshold) {
+        return point;
+      }
     }
   }
 
@@ -527,6 +612,7 @@ function checkPointOfInterest(x, y, distanceThreshold) {
 // Show the reward message
 function showRewardMessage(message) {
   // Display the message to the user
+  alert(message);
   console.log(message);
 }
 
@@ -539,9 +625,9 @@ function drawCircle(x, y) {
 initializeApp(firebaseAppConfig);
 
 const pointsOfInterest = [
-  { x: 100, y: 200, character: "Waldo" },
+  { x: 941, y: 358, character: "Wally" },
   { x: 300, y: 400, character: "Wilma" },
-  { x: 500, y: 600, character: "Wizard" },
+  { x: 1407, y: 845, character: "Wizard" },
 ];
 
 savePointsOfInterest(pointsOfInterest);
