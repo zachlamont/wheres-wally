@@ -526,7 +526,7 @@ function createModal(x, y) {
   modal.className = "modal";
   modal.style.position = "fixed";
   modal.style.left = x + "px";
-  modal.style.top = y + "px";
+  modal.style.top = y - 100 + "px";
 
   // Create and append the list of options
   const options = ["Wally", "Wilma", "Wizard"];
@@ -586,7 +586,6 @@ function handleOptionSelection(event, distanceThreshold, clickX, clickY) {
   modal.parentNode.removeChild(modal);
 }
 
-// Check if the selected option is near any point of interest
 function checkPointOfInterest(
   clickX,
   clickY,
@@ -594,11 +593,17 @@ function checkPointOfInterest(
   selectedOption
 ) {
   const pointsOfInterest = window.pointsOfInterest || [];
+  const imageElement = document.getElementById("waldo-image");
+  const imageRect = imageElement.getBoundingClientRect();
 
   for (const point of pointsOfInterest) {
     if (point.character === selectedOption) {
+      // Adjust the click coordinates relative to the image element
+      const adjustedClickX = clickX - imageRect.left;
+      const adjustedClickY = clickY - imageRect.top;
+
       const distance = Math.sqrt(
-        (point.x - clickX) ** 2 + (point.y - clickY) ** 2
+        (point.x - adjustedClickX) ** 2 + (point.y - adjustedClickY) ** 2
       );
       if (distance <= distanceThreshold) {
         return point;
@@ -626,7 +631,7 @@ initializeApp(firebaseAppConfig);
 
 const pointsOfInterest = [
   { x: 941, y: 358, character: "Wally" },
-  { x: 300, y: 400, character: "Wilma" },
+  { x: 640, y: 319, character: "Wilma" },
   { x: 1407, y: 845, character: "Wizard" },
 ];
 
